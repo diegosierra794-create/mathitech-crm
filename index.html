@@ -1266,14 +1266,41 @@ function renderReportes(){
 // EXPORTAR CSV
 // ══════════════════════════════════════════════════════════════
 function exportarCSV(){
-  let csv = 'ID,Cliente,Tipo,Componentes,Valor COP,Estado,Fecha\n';
-  state.servicios.forEach(s=>{
-    const c = state.clientes.find(x=>x.id===s.clienteId);
-    csv += `${s.id},"${c?c.nombre:''}","${s.tipo}","${s.componentes||''}",${s.valor||0},"${s.estado}","${s.fecha}"\n`;
+
+  // Separador compatible con Excel español
+  let csv = 'ID;Cliente;Tipo;Componentes;Valor COP;Estado;Fecha\n';
+
+  state.servicios.forEach(s => {
+
+    const c = state.clientes.find(x => x.id === s.clienteId);
+
+    csv += `${s.id};"${c ? c.nombre : ''}";"${s.tipo}";"${s.componentes || ''}";${s.valor || 0};"${s.estado}";"${s.fecha}"\n`;
+
   });
-  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+
+  // UTF-8 BOM para caracteres especiales
+  const csvContent = '\uFEFF' + csv;
+
+  const blob = new Blob(
+    [csvContent],
+    { type: 'text/csv;charset=utf-8;' }
+  );
+
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='MathiTech_Servicios.csv'; a.click();
+
+  const a = document.createElement('a');
+
+  a.href = url;
+  a.download = 'MathiTech_Servicios.csv';
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+
   toast('CSV exportado exitosamente','success');
 }
 
